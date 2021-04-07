@@ -1,6 +1,6 @@
 # coding=utf-8
 """
-AltFlatten version 1.0.0
+AltFlatten version 1.1.0
 
 Copyrights(c) 2021 altnoi
 
@@ -42,6 +42,7 @@ class flattenLib(object):
     def move_target_vertex(self):
         self.reset_status(self.base_standby)
         if self.base_standby:
+            cmds.undoInfo(openChunk=True)
             selected_vertexes = cmds.ls(selection=True, fl=True)
             for i in range(len(selected_vertexes)):
                 cmds.select(clear=True)
@@ -51,6 +52,7 @@ class flattenLib(object):
                 forward_pos = self.calc_forward_position(position_vectored)
                 cmds.select(selected_vertexes[i])
                 cmds.move(forward_pos.x, forward_pos.y, forward_pos.z)
+            cmds.undoInfo(closeChunk=True)
         else:
             self.error_message = "Setup base first!!!"
 

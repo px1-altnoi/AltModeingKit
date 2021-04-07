@@ -1,6 +1,6 @@
-# coding=utf-8
+# coding:utf-8
 """
-AltFlatten version 1.0.0
+AltFlatten version 1.1.0
 
 Copyrights(c) 2021 altnoi
 
@@ -9,10 +9,12 @@ http://opensource.org/licenses/mit-license.php
 """
 from PySide2 import QtWidgets, QtCore, QtGui
 from shiboken2 import wrapInstance
-
 import maya.OpenMayaUI as omui
+import maya.cmds as cmds
 
 import AltModelingKit.AltFlatten.lib as flatlib
+
+MAYA_VERSION = cmds.about(version=True)
 
 
 def maya_main_window():
@@ -21,6 +23,8 @@ def maya_main_window():
     :return:
     """
     main_wnd_ptr = omui.MQtUtil.mainWindow()
+    if MAYA_VERSION >= 2022:
+        return wrapInstance(int(main_wnd_ptr), QtWidgets.QWidget)
     return wrapInstance(long(main_wnd_ptr), QtWidgets.QWidget)
 
 
@@ -51,6 +55,9 @@ class flattenMainUI(QtWidgets.QDialog):
         self.setWindowTitle("AltFlatten version 1.0.0")
         self.setMinimumSize(300, 120)
         self.setWindowFlags(self.windowFlags() ^ QtCore.Qt.WindowContextHelpButtonHint)
+
+        self.geometry = None
+
         self.lib = flatlib.flattenLib()
 
         self.create_widgets()
@@ -91,3 +98,13 @@ class flattenMainUI(QtWidgets.QDialog):
         self.lib.move_target_vertex()
         if self.lib.error_message:
             self.status_text.setText(self.lib.error_message)
+
+    # override close and show
+    def showEvent(self, e):
+        super(flattenMainUI, self).showEvent(e)
+        if self.geometry:
+            self.restoreGeometry(self.geometry)
+
+    def closeEvent(self, e):
+        super(flattenMainUI, self).closeEvent(e)
+        self.geometry = self.saveGeometry()
